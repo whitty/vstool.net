@@ -39,6 +39,33 @@ namespace VsTool
             m_sln.DTE.Debugger.Go(wait);
         }
     };
+
+    [SupportedOSPlatform("windows")]
+    class DTE80 : Solution
+    {
+        public DTE80(EnvDTE80.DTE2 sln)
+        {
+            m_sln = sln;
+        }
+
+        EnvDTE80.DTE2 m_sln;
+
+        void Solution.Build(bool wait)
+        {
+            m_sln.Solution.SolutionBuild.Build(wait);
+        }
+
+        void Solution.Stop(bool wait)
+        {
+            m_sln.DTE.Debugger.Stop(wait);
+        }
+
+        void Solution.Go(bool wait)
+        {
+            m_sln.DTE.Debugger.Go(wait);
+        }
+    };
+
     #endregion
 
     public class Env
@@ -56,6 +83,12 @@ namespace VsTool
                 if ((EnvDTE100.Solution4?)p is EnvDTE100.Solution4 e100)
                 {
                     m_solution = new DTE100(e100);
+                    return;
+                }
+
+                if ((EnvDTE80.DTE2?)p is EnvDTE80.DTE2 e80)
+                {
+                    m_solution = new DTE80(e80);
                     return;
                 }
             }
