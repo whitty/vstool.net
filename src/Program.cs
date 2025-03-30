@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 // (C) Copyright 2025 Greg Whiteley
 
 using System.CommandLine;
