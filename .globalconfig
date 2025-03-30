@@ -1,0 +1,4 @@
+is_global = true
+
+# CA1303: Retrieve the following string(s) from a resource table instead:
+dotnet_diagnostic.CA1303.severity = silent

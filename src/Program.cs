@@ -2,9 +2,10 @@
 
 using System.CommandLine;
 
-internal class Program
+sealed internal class Program
 {
-    private static Task WithEnv(string solution, Func<VsTool.Env, int> fn)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1031:catch a more specific allowed exception type, or rethrow the exception", Justification = "We're just squashing it for the CLI.")]
+    private static Task<int> WithEnv(string solution, Func<VsTool.Env, int> fn)
     {
         try
         {
@@ -18,7 +19,7 @@ internal class Program
         return Task.FromResult(1);
     }
 
-    private static Task WithEnv(string solution, Action<VsTool.Env> fn)
+    private static Task<int> WithEnv(string solution, Action<VsTool.Env> fn)
     {
         return WithEnv(solution, (env) => {
             fn(env);

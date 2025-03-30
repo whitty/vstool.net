@@ -15,7 +15,7 @@ namespace VsTool
     };
 
     [SupportedOSPlatform("windows")]
-    class DTE100 : Solution
+    sealed class DTE100 : Solution
     {
         public DTE100(EnvDTE100.Solution4 sln)
         {
@@ -41,7 +41,7 @@ namespace VsTool
     };
 
     [SupportedOSPlatform("windows")]
-    class DTE80 : Solution
+    sealed class DTE80 : Solution
     {
         public DTE80(EnvDTE80.DTE2 sln)
         {
@@ -93,10 +93,6 @@ namespace VsTool
                 }
             }
             throw new TypeLoadException($"Unable to load matching type for solution: {p}");
-        }
-
-        ~Env()
-        {
         }
         #endregion
 
