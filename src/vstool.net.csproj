@@ -6,10 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+
+    <PackageId>vstool.net</PackageId>
+    <PackageVersion>1.0.0-pre1</PackageVersion>
+    <Title>Command line helper for Visual Studio</Title>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="envdte100" Version="17.13.40008" />
+    <PackageReference Include="envdte100" Version="17.*" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
