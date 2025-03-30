@@ -1,0 +1,16 @@
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_size = 4
+charset = utf-8
+
+[{[Mm]akefile,*.mk,*.mak,Kbuild*,debian/rules}]
+indent_style = tab
+trim_trailing_whitespace = false
+
+[{*.groovy,.jenkinsfile*,*.rb,*.sh,*.js,*.xml,*.bash,*.bats,*.json,.emacs,*.yaml,*.yml,*.el}]
+indent_size = 2
+
+[*.{csproj,vsproj}]
+end_of_line = crlf
