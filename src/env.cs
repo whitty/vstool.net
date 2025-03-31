@@ -2,9 +2,6 @@
 // (C) Copyright 2025 Greg Whiteley
 using System.Runtime.Versioning;
 
-using Microsoft.VisualStudio.OLE.Interop;
-using System.Runtime.InteropServices;
-
 namespace VsTool
 {
     #region Version Interface
@@ -72,91 +69,11 @@ namespace VsTool
 
     #endregion
 
-    [SupportedOSPlatform("windows")]
-    internal static class ROT
+    public sealed class NotRunningException : Exception
     {
-        public sealed class COMException: System.Runtime.InteropServices.COMException
-        {
-            public COMException(string? message, int errorCode) : base(message, errorCode) {}
-            public COMException(string? message) : base(message) {}
-            public COMException(string? message, Exception inner) : base(message, inner) {}
-            private COMException() : base() {}
-        }
-
-        [DllImport("ole32.dll")]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-        private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
-
-        [DllImport("ole32.dll")]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-        private static extern int GetRunningObjectTable(uint reserved, out IRunningObjectTable pprot);
-
-        [DllImport("ole32.dll")]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.UserDirectories)]
-        private static extern int MkParseDisplayName(IBindCtx pbc, [MarshalAs(UnmanagedType.LPWStr)] String szUserName, out UInt32 pchEaten, out IMoniker ppmk);
-
-        static IRunningObjectTable GetRot()
-        {
-            IRunningObjectTable? pRunningObjectTable = null;
-            var hResult = GetRunningObjectTable(0, out pRunningObjectTable);
-            if (hResult < 0)
-            {
-                Marshal.ThrowExceptionForHR(hResult);
-            }
-            if (pRunningObjectTable == null)
-            {
-                throw new COMException("Failed to get RunningObjectTable", hResult);
-            }
-            return pRunningObjectTable;
-        }
-
-        static IBindCtx CreateBindContext()
-        {                        IBindCtx? pBindCtx = null;
-            var hResult = CreateBindCtx(0, out pBindCtx);
-            if (hResult < 0)
-            {
-                Marshal.ThrowExceptionForHR(hResult);
-            }
-            if (pBindCtx == null)
-            {
-                throw new COMException("Failed to get BindCtx", hResult);
-            }
-
-            return pBindCtx;
-        }
-
-        static IMoniker ParseDisplayName(IBindCtx pBindCtx, string mk)
-        {
-            UInt32 cbEaten;
-            IMoniker? pMoniker = null;
-            var hResult = MkParseDisplayName(pBindCtx, mk, out cbEaten, out pMoniker);
-            if (hResult < 0)
-            {
-                Marshal.ThrowExceptionForHR(hResult);
-            }
-            if (cbEaten < mk.Length || pMoniker == null)
-            {
-                throw new COMException($"Failed to interpret '{mk}' as moniker");
-            }
-            return pMoniker;
-        }
-
-        public static bool IsRunning(string path)
-        {
-            IRunningObjectTable pRunningObjectTable = GetRot();
-            IBindCtx pBindCtx = CreateBindContext();
-
-            IMoniker pMoniker = ParseDisplayName(pBindCtx, path);
-
-            var hResult = pRunningObjectTable.IsRunning(pMoniker);
-            if (hResult < 0)
-            {
-                Marshal.ThrowExceptionForHR(hResult);
-            }
-
-            Console.WriteLine($"GetRunningObjectTable returned {hResult}");
-            return true;
-        }
+        public NotRunningException(string path) : base($"'{path}' is not running") {}
+        public NotRunningException(string path, Exception inner) : base($"'{path}' is not running", inner) {}
+        private NotRunningException() : base() {}
     }
 
     public class Env
@@ -164,16 +81,20 @@ namespace VsTool
     #region Ctor & Destructor
         public Env(string path)
         {
-            m_path = path ?? throw new ArgumentNullException(nameof(path));
+            ArgumentNullException.ThrowIfNull(path);
+
+            m_path = Path.GetFullPath(path);
 
             object? p = null;
             if (OperatingSystem.IsWindows())
             {
-                if (ROT.IsRunning(path))
+                if (!ROT.IsRunning(m_path))
                 {
-                    Console.WriteLine("IS running?");
+                    // TODO in admin mode this sometimes fails
+                    throw new NotRunningException(m_path);
                 }
-                p = System.Runtime.InteropServices.Marshal.BindToMoniker(path);
+
+                p = System.Runtime.InteropServices.Marshal.BindToMoniker(m_path);
 
                 if ((EnvDTE100.Solution4?)p is EnvDTE100.Solution4 e100)
                 {
