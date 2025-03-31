@@ -51,6 +51,10 @@ sealed internal class Program
         buildCommand.SetHandler((solution, wait) => {
             return WithEnv(solution, (env) => {
                 env.Build(wait);
+                if (wait)
+                    Console.WriteLine($"Built {solution}");
+                else
+                    Console.WriteLine($"Sent build to {solution}");
             });
         }, solutionArgument, waitFlag);
 
@@ -65,6 +69,10 @@ sealed internal class Program
         goCommand.SetHandler((solution, wait) => {
             return WithEnv(solution, (env) => {
                 env.Go(wait);
+                if (wait)
+                    Console.WriteLine($"Started {solution}");
+                else
+                    Console.WriteLine($"Sent go to {solution}");
             });
         }, solutionArgument, waitFlag);
 
@@ -77,8 +85,13 @@ sealed internal class Program
         rootCommand.AddCommand(stopCommand);
 
         stopCommand.SetHandler((solution, wait) => {
-            var env = new VsTool.Env(solution);
-            env.Stop(wait);
+            return WithEnv(solution, (env) => {
+                env.Stop(wait);
+                if (wait)
+                    Console.WriteLine($"Stopped {solution}");
+                else
+                    Console.WriteLine($"Sent stop to {solution}");
+            });
         }, solutionArgument, waitFlag);
 
         ////////////////////////////////////////////////////////////////////////
