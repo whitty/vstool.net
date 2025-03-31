@@ -1,0 +1,36 @@
+name: Test builds
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: dotnet ${{matrix.dotnet-version}} on ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dotnet-version: [ '8.x' ]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build Debug
+        run: dotnet build --configuration Debug --no-restore
+
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test Debug
+        run: dotnet test --configuration Debug --no-restore
+
+      - name: Build Release
+        run: dotnet test --configuration Release --no-restore
