@@ -1,0 +1,46 @@
+name: Publish release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x' # SDK Version to use.
+      - name: Build
+        run: |
+          dotnet publish --configuration Release -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=false -o out src\vstool.net.csproj
+      - name: Upload release
+        id: upload_release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const path = require('path');
+            const fs = require('fs');
+            const tag = '${{ github.ref }}'.replace('refs/tags/', '');
+            const releaseDetails = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tag
+            });
+            const {
+              data: { id: releaseId, html_url: htmlUrl, upload_url: uploadUrl }
+            } = releaseDetails;
+            for (let file of await fs.readdirSync('./out')) {
+              console.log('uploadReleaseAsset', file);
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                name: file,
+                data: await fs.readFileSync(`./out/${file}`)
+              });
+            }
