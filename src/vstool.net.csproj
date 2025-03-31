@@ -11,6 +11,9 @@
     <PackageVersion>1.0.0-pre1</PackageVersion>
     <Title>Command line helper for Visual Studio</Title>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+
+    <!-- emacs temp file exclude -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\.#*.cs</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
