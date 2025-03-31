@@ -82,7 +82,6 @@ namespace VsTool
         public Env(string path)
         {
             ArgumentNullException.ThrowIfNull(path);
-
             m_path = Path.GetFullPath(path);
 
             object? p = null;
@@ -91,7 +90,19 @@ namespace VsTool
                 if (!ROT.IsRunning(m_path))
                 {
                     // TODO in admin mode this sometimes fails
-                    throw new NotRunningException(m_path);
+
+                    bool running = false;
+                    foreach (var v in ROT.EachRunning())
+                    {
+                        if (v == m_path)
+                        {
+                            running = true;
+                            break;
+                        }
+                    }
+
+                    if (!running)
+                        throw new NotRunningException(m_path);
                 }
 
                 p = System.Runtime.InteropServices.Marshal.BindToMoniker(m_path);
