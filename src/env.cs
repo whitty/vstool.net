@@ -4,7 +4,6 @@ using System.Runtime.Versioning;
 
 namespace VsTool;
 
-#region Version Interface
 // For now these are just direct wrappers of functionality
 // the idea is to implement the pieces of larger bits of functionality
 // overloaded by supported version
@@ -16,7 +15,30 @@ interface Solution
 };
 
 [SupportedOSPlatform("windows")]
-sealed class DTE100 : Solution
+abstract class DTE : Solution
+{
+    internal abstract EnvDTE.Debugger Debugger();
+    internal abstract EnvDTE.SolutionBuild SolutionBuild();
+
+    void Solution.Build(bool wait)
+    {
+        SolutionBuild().Build(wait);
+    }
+
+    void Solution.Stop(bool wait)
+    {
+        Debugger().Stop(wait);
+    }
+
+    void Solution.Go(bool wait)
+    {
+        Debugger().Go(wait);
+    }
+}
+
+#region Version Interface
+[SupportedOSPlatform("windows")]
+sealed class DTE100 : DTE
 {
     public DTE100(EnvDTE100.Solution4 sln)
     {
@@ -25,24 +47,19 @@ sealed class DTE100 : Solution
 
     EnvDTE100.Solution4 m_sln;
 
-    void Solution.Build(bool wait)
+    internal override EnvDTE.Debugger Debugger()
     {
-        m_sln.SolutionBuild.Build(wait);
+        return m_sln.DTE.Debugger;
     }
 
-    void Solution.Stop(bool wait)
+    internal override EnvDTE.SolutionBuild SolutionBuild()
     {
-        m_sln.DTE.Debugger.Stop(wait);
-    }
-
-    void Solution.Go(bool wait)
-    {
-        m_sln.DTE.Debugger.Go(wait);
+        return m_sln.SolutionBuild;
     }
 };
 
 [SupportedOSPlatform("windows")]
-sealed class DTE80 : Solution
+sealed class DTE80 : DTE
 {
     public DTE80(EnvDTE80.DTE2 sln)
     {
@@ -51,19 +68,14 @@ sealed class DTE80 : Solution
 
     EnvDTE80.DTE2 m_sln;
 
-    void Solution.Build(bool wait)
+    internal override EnvDTE.Debugger Debugger()
     {
-        m_sln.Solution.SolutionBuild.Build(wait);
+        return m_sln.DTE.Debugger;
     }
 
-    void Solution.Stop(bool wait)
+    internal override EnvDTE.SolutionBuild SolutionBuild()
     {
-        m_sln.DTE.Debugger.Stop(wait);
-    }
-
-    void Solution.Go(bool wait)
-    {
-        m_sln.DTE.Debugger.Go(wait);
+        return m_sln.Solution.SolutionBuild;
     }
 };
 
