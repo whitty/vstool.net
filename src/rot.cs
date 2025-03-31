@@ -81,7 +81,19 @@ internal static class ROT
         IRunningObjectTable pRunningObjectTable = GetRot();
         IBindCtx pBindCtx = CreateBindContext();
 
-        IMoniker pMoniker = ParseDisplayName(pBindCtx, path);
+        IMoniker? pMoniker = null;
+        try {
+            pMoniker = ParseDisplayName(pBindCtx, path);
+        }
+        catch (System.Runtime.InteropServices.COMException e)
+        {
+            if ((uint)e.HResult == 0x800401EA) // (MK_E_CANTOPENFILE)
+            {
+                // no file - not running
+                return false;
+            }
+            throw new COMException("Unexpcted failure parsing display name", e);
+        }
 
         var hResult = pRunningObjectTable.IsRunning(pMoniker);
         if (hResult < 0)
