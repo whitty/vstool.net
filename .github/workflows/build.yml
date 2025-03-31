@@ -30,7 +30,22 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Test Debug
-        run: dotnet test --configuration Debug --no-restore
+        run: dotnet test --configuration Debug --no-restore --  --report-trx --results-directory ../TestResults-debug-${{ matrix.os }}-${{ matrix.dotnet-version }}
 
-      - name: Build Release
-        run: dotnet test --configuration Release --no-restore
+      - name: Debug output
+        if: ${{ !cancelled() }}
+        run: cat TestResults-debug-${{ matrix.os }}-${{ matrix.dotnet-version }}/*.log
+
+      - name: Test Release
+        run: dotnet test --configuration Release --no-restore --  --report-trx --results-directory ../TestResults-release-${{ matrix.os }}-${{ matrix.dotnet-version }}
+
+      - name: Release output
+        if: ${{ !cancelled() }}
+        run: cat TestResults-release-${{ matrix.os }}-${{ matrix.dotnet-version }}/*.log
+
+      - name: Upload dotnet test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-results-${{ matrix.os }}-${{ matrix.dotnet-version }}
+          path: TestResults-*
